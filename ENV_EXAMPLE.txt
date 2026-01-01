@@ -1,0 +1,17 @@
+# Database Configuration
+# For Windows Authentication (no username/password needed), leave DB_USER and DB_PASSWORD empty
+DB_SERVER=LAPTOP-RE844OVJ\SQLEXPRESS
+DB_NAME=ecommerce_db
+DB_USER=
+DB_PASSWORD=
+
+# For SQL Server Authentication, uncomment and fill these:
+# DB_USER=sa
+# DB_PASSWORD=your_password_here
+
+# JWT Secret (Change this to a secure random string in production)
+JWT_SECRET=your-secret-key-change-this-in-production-use-a-long-random-string
+JWT_EXPIRES_IN=7d
+
+# Next.js
+NEXT_PUBLIC_APP_URL=http://localhost:3000

@@ -1,114 +1,252 @@
+'use client'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
-import img from '../../../public/sampleWeb/img1.png'
-import Img from '../../../public/vercel.svg'
-import Wordpress from '../../../public/wordpress.png'
-import Star from '../../../public/star.jpg'
-import 'swiper/css';
-import 'swiper/css/pagination';
-// components imported 
-import OurPlugins from './OurPlugins'
-import OurThemes from './OurThemes'
-import Achievements from './Achievements'
-import Ratings from './Ratings'
-import Supports from './Supports'
-// end
-// imported arrays
-import services from './servicesStore'
-//end
-//imported icons
-import { FaStar } from "react-icons/fa6";
-//end
+import { fetchAllProducts, fetchCategories } from '../services/productApi'
+import { useCart } from '../context/CartContext'
+import { useToast } from '../context/ToastContext'
+import { FaShoppingCart, FaHeart, FaSearch, FaStar, FaMinus, FaPlus, FaSpinner } from 'react-icons/fa'
+import { formatPrice } from '../lib/currency'
+
 export default function HomePage() {
+    const [products, setProducts] = useState([])
+    const [categories, setCategories] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedCategory, setSelectedCategory] = useState('All')
+    const [sortBy, setSortBy] = useState('featured')
+    const { cart, addToCart, updateQuantity, addToWishlist, isInWishlist, removeFromWishlist } = useCart()
+    const { showToast } = useToast()
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true)
+                const [productsData, categoriesData] = await Promise.all([
+                    fetchAllProducts(),
+                    fetchCategories()
+                ])
+                setProducts(productsData)
+                setCategories(categoriesData)
+            } catch (error) {
+                console.error('Error loading products:', error)
+                showToast('Failed to load products. Please try again later.', 'error')
+            } finally {
+                setLoading(false)
+            }
+        }
+        loadData()
+    }, [showToast])
+
+    const getCartQuantity = (productId) => {
+        const item = cart.find(item => item.id === productId && item.type === 'products')
+        return item ? item.quantity : 0
+    }
+
+    const handleAddToCart = (product) => {
+        addToCart({ ...product, type: 'products' })
+        showToast(`${product.name} added to cart!`, 'success')
+    }
+
+    const handleQuantityChange = (product, change) => {
+        const currentQty = getCartQuantity(product.id)
+        const newQty = currentQty + change
+
+        if (newQty <= 0) {
+            updateQuantity(product.id, 'products', 0)
+            showToast(`${product.name} removed from cart`, 'success')
+        } else {
+            updateQuantity(product.id, 'products', newQty)
+            showToast(`Quantity updated to ${newQty}`, 'success')
+        }
+    }
+
+    const handleWishlistToggle = (product, inWishlist) => {
+        if (inWishlist) {
+            removeFromWishlist(product.id, 'products')
+            showToast(`${product.name} removed from wishlist`, 'success')
+        } else {
+            addToWishlist({ ...product, type: 'products' })
+            showToast(`${product.name} added to wishlist!`, 'success')
+        }
+    }
+
+    // Filter and sort products
+    let filteredProducts = products.filter(product => {
+        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            product.description.toLowerCase().includes(searchTerm.toLowerCase())
+        const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory
+        return matchesSearch && matchesCategory
+    })
+
+    // Sort products
+    if (sortBy === 'price-low') {
+        filteredProducts = [...filteredProducts].sort((a, b) => a.price - b.price)
+    } else if (sortBy === 'price-high') {
+        filteredProducts = [...filteredProducts].sort((a, b) => b.price - a.price)
+    } else if (sortBy === 'rating') {
+        filteredProducts = [...filteredProducts].sort((a, b) => b.rating - a.rating)
+    } else if (sortBy === 'name') {
+        filteredProducts = [...filteredProducts].sort((a, b) => a.name.localeCompare(b.name))
+    }
+
     return (
-        <>
-            <div className='lg:flex bg-slate-100 lg:px-40 md:px-20 px-7 py-20 justify-center items-center'>
-                <div className='flex flex-col gap-8 flex-wrap lg:w-full justify-center items-center lg:justify-start lg:items-start'>
-                    <h1 className=' lg:text-6xl md:text-5xl text-4xl font-semibold lg:text-left text-center'>Awesome themes & plugins for WordPress</h1>
-                    <p className='lg:mr-36 mr-0 text-xl opacity-90 lg:text-left text-center'>Easily build a beautiful WordPress website with our premium themes and plugins.</p>
-                    <div className='flex gap-4 flex-wrap lg:justify-start lg:items-start items-center justify-center'>
-                        <button className='py-3 px-7 text-white rounded-md bg-indigo-500 font-medium hover:bg-indigo-600 transition duration-300'>Explore our products</button>
-                        <button className='py-3 px-7 rounded-md text-indigo-500 font-medium hover:text-black transition duration-300'>Why choose us ?</button>
-                    </div>
-                </div>
-                <div className='lg:w-full lg:mt-0 mt-5 flex lg:items-start lg:justify-start justify-center items-center'>
-                    <Image src={img} />
+        <div className='min-h-screen bg-gradient-to-b from-slate-50 to-white'>
+            {/* Hero Section */}
+            <div className='bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 lg:px-40 md:px-20 px-7 py-16 text-white'>
+                <div className='max-w-4xl mx-auto text-center'>
+                    <h1 className='lg:text-6xl md:text-5xl text-4xl font-bold mb-6 leading-tight'>
+                        Welcome to <span className='bg-clip-text text-transparent bg-gradient-to-r from-yellow-300 to-orange-300'>ShopActive</span>
+                    </h1>
+                    <p className='text-xl opacity-95 mb-8 max-w-2xl mx-auto'>
+                        Discover amazing products at unbeatable prices. Shop electronics, fashion, home essentials, and more with fast shipping and excellent service.
+                    </p>
                 </div>
             </div>
-            <div className='flex justify-center items-center flex-col lg:px-40 md:px-20 px-7 py-14 bg-slate-100 '>
-                <h4 className='tracking-widest'>Powering 12,653,898+ of websites</h4>
-                <div className=' overflow-hidden opacity-35'>
-                    <div className='flex mt-12 space-x-16 animate-loop-scroll'>
-                        <Image src={Img} />
+
+            {/* Search and Filter Section */}
+            <div className='lg:px-40 md:px-20 px-7 py-8 bg-white border-b shadow-sm'>
+                <div className='flex flex-col md:flex-row gap-4'>
+                    <div className='flex-1 relative'>
+                        <FaSearch className='absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400' />
+                        <input
+                            type='text'
+                            placeholder='Search products...'
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className='w-full pl-12 pr-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent shadow-sm'
+                        />
                     </div>
+                    <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className='px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm'
+                    >
+                        <option value='All'>All Categories</option>
+                        {categories.map(category => (
+                            <option key={category} value={category}>
+                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                        className='px-4 py-3 rounded-lg border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white shadow-sm'
+                    >
+                        <option value='featured'>Featured</option>
+                        <option value='price-low'>Price: Low to High</option>
+                        <option value='price-high'>Price: High to Low</option>
+                        <option value='rating'>Highest Rated</option>
+                        <option value='name'>Name A-Z</option>
+                    </select>
                 </div>
+                {!loading && (
+                    <p className='text-gray-600 mt-4'>
+                        {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
+                    </p>
+                )}
             </div>
-            <div className='flex justify-center items-center text-center flex-col lg:px-40 md:px-20 px-7 py-40'>
-                <h2 className='font-semibold lg:text-5xl md:text-4xl text-3xl'>WP Vantage is a complete solutions to make it easy for anyone to create awesome WordPress websites.</h2>
-                <div className='flex my-20 gap-16 justify-center items-center flex-wrap'>
-                    <div className='flex'>
-                        <Image src={Wordpress} className='h-12 w-auto' />
-                        <div className='pl-2 flex flex-col justify-center items-start'>
-                            <div className='flex text-yellow-400'>
-                                <FaStar className='' />
-                                <FaStar />
-                                <FaStar />
-                                <FaStar />
-                                <FaStar />
-                            </div>
-                            <div className='opacity-90'>5 of 5 (6500 reviews)</div>
-                        </div>
+
+            {/* Products Grid */}
+            <div className='lg:px-40 md:px-20 px-7 py-12'>
+                {loading ? (
+                    <div className='flex justify-center items-center py-20'>
+                        <FaSpinner className='text-4xl text-indigo-600 animate-spin' />
                     </div>
-                    <div className='sm:block hidden'>
-                        <h1 className='text-4xl opacity-30'>|</h1>
+                ) : filteredProducts.length === 0 ? (
+                    <div className='text-center py-20'>
+                        <p className='text-xl text-gray-600'>No products found matching your criteria.</p>
                     </div>
-                    <div className='flex'>
-                        <Image src={Star} className='h-12 w-auto' />
-                        <div className='pl-2 flex flex-col justify-center items-start'>
-                            <div className='flex text-yellow-400'>
-                                <FaStar className='' />
-                                <FaStar />
-                                <FaStar />
-                                <FaStar />
-                                <FaStar />
-                            </div>
-                            <div className='opacity-90'>4.9 of 5 (4800 reviews)</div>
-                        </div>
-                    </div>
-                </div>
-                {/* <div className=''>
-                    <iframe width="1200" height="675" className='rounded-3xl' src="https://www.youtube.com/embed/XHOmBV4js_E" title="Video Placeholder" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                </div> */}
-            </div>
-            <div className='flex justify-center items-center flex-col gap-8 lg:px-40 md:px-20 px-7 pb-40'>
-                <h2 className='lg:text-5xl md:text-4xl text-3xl font-semibold mb-11'>Why people love us</h2>
-                <div className='flex flex-wrap justify-center gap-y-12 gap-x-4'>
-                    {
-                        services.map((e) => {
+                ) : (
+                    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+                        {filteredProducts.map((product) => {
+                            const inWishlist = isInWishlist(product.id, 'products')
+                            const quantity = getCartQuantity(product.id)
+
                             return (
-                                <div key={e.id} className='card sm:w-96 h-auto sm:p-10 p-4 rounded-xl border border-slate-500 border-opacity-35 hover:bg-white hover:shadow-md transition duration-300'>
-                                    {e.icon}
-                                    <h2 className='font-medium text-2xl mb-1'>{e.name}</h2>
-                                    <p className='opacity-80'>{e.desc}</p>
+                                <div key={product.id} className='bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1'>
+                                    <Link href={`/products/${product.slug}`} className='relative block'>
+                                        <div className='relative h-64 overflow-hidden'>
+                                            <Image
+                                                src={product.img}
+                                                alt={product.name}
+                                                fill
+                                                className='object-cover transition-transform group-hover:scale-110 duration-300'
+                                            />
+                                        </div>
+                                        <div className='absolute top-3 right-3'>
+                                            <button
+                                                onClick={(event) => {
+                                                    event.preventDefault()
+                                                    handleWishlistToggle(product, inWishlist)
+                                                }}
+                                                className={`p-2 rounded-full bg-white shadow-lg transition ${inWishlist ? 'text-red-500' : 'text-gray-400 hover:text-red-500'
+                                                    }`}
+                                            >
+                                                <FaHeart className={inWishlist ? 'fill-current' : ''} />
+                                            </button>
+                                        </div>
+                                    </Link>
+                                    <div className='p-5'>
+                                        <div className='mb-2'>
+                                            <span className='text-xs text-indigo-600 font-semibold uppercase tracking-wide'>
+                                                {product.category}
+                                            </span>
+                                        </div>
+                                        <Link href={`/products/${product.slug}`}>
+                                            <h3 className='text-lg font-bold mb-2 hover:text-indigo-600 transition line-clamp-2'>
+                                                {product.name}
+                                            </h3>
+                                        </Link>
+                                        <p className='text-gray-600 text-sm mb-3 line-clamp-2'>{product.description}</p>
+                                        <div className='flex items-center gap-2 mb-3'>
+                                            <div className='flex items-center'>
+                                                {[...Array(5)].map((_, i) => (
+                                                    <FaStar
+                                                        key={i}
+                                                        className={i < Math.floor(product.rating) ? 'text-yellow-400 text-xs' : 'text-gray-300 text-xs'}
+                                                    />
+                                                ))}
+                                            </div>
+                                            <span className='text-sm text-gray-600'>({product.rating.toFixed(1)})</span>
+                                            <span className='text-sm text-gray-400'>({product.reviews})</span>
+                                        </div>
+                                        <div className='flex items-center gap-3 mb-4'>
+                                            <span className='text-2xl font-bold text-indigo-600'>{formatPrice(product.price)}</span>
+                                        </div>
+                                        {quantity > 0 ? (
+                                            <div className='flex items-center justify-center gap-3 border-2 border-indigo-500 rounded-lg p-2'>
+                                                <button
+                                                    onClick={() => handleQuantityChange(product, -1)}
+                                                    className='p-1 hover:bg-indigo-50 rounded transition'
+                                                >
+                                                    <FaMinus className='text-sm text-indigo-600' />
+                                                </button>
+                                                <span className='font-semibold text-indigo-600 min-w-[30px] text-center'>{quantity}</span>
+                                                <button
+                                                    onClick={() => handleQuantityChange(product, 1)}
+                                                    className='p-1 hover:bg-indigo-50 rounded transition'
+                                                >
+                                                    <FaPlus className='text-sm text-indigo-600' />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => handleAddToCart(product)}
+                                                className='w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition font-semibold shadow-md hover:shadow-lg'
+                                            >
+                                                <FaShoppingCart />
+                                                Add to Cart
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             )
-                        })
-                    }
-
-                </div>
+                        })}
+                    </div>
+                )}
             </div>
-            <OurThemes />
-            <div className='px-40'>
-                <hr/>
-            </div>
-            <OurPlugins />
-            <Achievements />
-            <Ratings />
-            <Supports/>
-            <div className=' text-center lg:px-40 md:px-20 px-7 py-32 bg-gradient-to-b from-indigo-500 to-indigo-700 text-white flex flex-col gap-4 justify-center items-center'>
-                <h1 className='text-4xl font-semibold'>Start building awesome websites</h1>
-                <p className='text-xl'>Join over 12,653,898 of customers that already building amazing websites</p>
-                <button className='py-3 w-60 rounded-lg text-indigo-600 bg-slate-50 font-semibold hover:bg-slate-900 hover:text-white transition duration-300'>Explore our products</button>
-            </div>
-        </>
+        </div>
     )
 }

@@ -1,11 +1,5 @@
-import React from 'react'
-import OurThemes from '../components/OurThemes'
-const Themes = () => {
-  return (
-    <div>
-        <OurThemes />
-    </div>
-  )
-}
+import { redirect } from 'next/navigation'
 
-export default Themes
+export default function ThemesPage() {
+    redirect('/products')
+}

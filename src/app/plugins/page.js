@@ -1,11 +1,5 @@
-import React from 'react'
-import OurPlugins from '../components/OurPlugins'
-const Plugins = () => {
-  return (
-    <div>
-        <OurPlugins />
-    </div>
-  )
-}
+import { redirect } from 'next/navigation'
 
-export default Plugins
+export default function PluginsPage() {
+    redirect('/products')
+}

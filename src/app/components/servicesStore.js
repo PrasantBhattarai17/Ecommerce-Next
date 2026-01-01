@@ -11,33 +11,33 @@ const services =[
     {
         id:1,
         icon: <IoMdSettings className={iconCss}/>,
-        name: "Easy to setup",
-        desc: "Auctor mauris quis viverra dictum sed in euismod id nunc, nulla ut nunc sed sed accumsan, magnis bibendum viverra suspendisse.",
+        name: "Easy Shopping Experience",
+        desc: "Browse and shop with ease. Our intuitive interface makes finding your favorite products simple and enjoyable.",
     },{
         id:2,
         icon: <BsFillCollectionFill className={iconCss}/>,
-        name: "500+ pre-built websites",
-        desc: "Vitae netus nisi, vitae augue duis eu accumsan ut phasellus sit tempor habitasse leo hendrerit amet laoreet ornare posuere justo.",
+        name: "50,000+ Products",
+        desc: "From electronics to fashion, home essentials to sports gear - we have everything you need in one place.",
     },{
         id:3,
         icon: <FaAccusoft className={iconCss}/>,
-        name: "Customize without code",
-        desc: "Egestas aliquam, enim at consectetur ullamcorper blandit at nisi, viverra sed nullam nisl, lectus est viverra ultrices accumsan viverra vel.",
+        name: "Best Prices Guaranteed",
+        desc: "We offer competitive prices on all products. Find the best deals and save money on every purchase.",
     },{
         id:4,
         icon: <GrUpdate className={iconCss}/>,
-        name: "Regular updates",
-        desc: "Vulputate viverra dui condimentum ornare aenean id vitae nulla diam, pharetra ac maecenas in et posuere in vivamus vulputate.",
+        name: "Daily New Arrivals",
+        desc: "Discover fresh products added daily. Stay updated with the latest trends and newest items in the market.",
     },{
         id:5,
         icon: <FaRocket className={iconCss}/>,
-        name: "Super fast performance",
-        desc: "Sit sit ultrices aliquam aliquam amet, facilisis elit tortor in id tellus tempor, non ullamcorper accumsan, viverra posuere aliquam.",
+        name: "Lightning Fast Delivery",
+        desc: "Get your orders delivered quickly. Fast shipping options available for all products with real-time tracking.",
     },{
         id:6,
         icon: <MdOutlineSupport className={iconCss}/>,
-        name: "Outstanding support",
-        desc: "Scelerisque odio id urna, nibh feugiat eu amet, interdum quis eu accumsan, mi mattis feugiat iaculis vitae tempus phasellus adipiscing.",
+        name: "24/7 Customer Support",
+        desc: "Our dedicated support team is always ready to help. Get assistance whenever you need it, day or night.",
     },
 ]
 
