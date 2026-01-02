@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { connectDB } from '@/app/lib/db'
+import { convertToNpr } from '@/app/lib/currency'
 import sql from 'mssql'
 
 export async function POST(request) {
@@ -26,7 +27,6 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Invalid order data' }, { status: 400 })
         }
 
-        const CONVERSION_RATE = 130
 
         const pool = await connectDB()
         const transaction = new sql.Transaction(pool)
@@ -35,7 +35,7 @@ export async function POST(request) {
             await transaction.begin()
 
             // Convert total to NPR
-            const totalInNpr = total * CONVERSION_RATE
+            const totalInNpr = convertToNpr(total)
 
             // 1. Create Order
             const orderRequest = new sql.Request(transaction)
@@ -79,52 +79,56 @@ export async function POST(request) {
                 `)
             }
 
-            // 3. If Khalti, initiate payment
-            if (paymentMethod === 'khalti') {
-                const payload = {
-                    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/khalti/callback`,
-                    website_url: process.env.NEXT_PUBLIC_APP_URL,
-                    amount: Math.round(totalInNpr * 100), // convert to paisa
-                    purchase_order_id: orderId,
-                    purchase_order_name: `Order #${orderId}`,
-                    customer_info: {
-                        name: `${firstName} ${lastName}`,
-                        email: email,
-                        phone: phone
-                    }
-                }
+            // 3. If eSewa, prepare payment
+            if (paymentMethod === 'esewa') {
+                try {
+                    const crypto = require('crypto');
+                    const esewaSecretKey = '8gBm/:&EnhH.1/q';
+                    const esewaProductCode = process.env.ESEWA_PRODUCT_CODE || 'EPAYTEST';
+                    const esewaBaseUrl = process.env.ESEWA_BASE_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
 
-                console.log('Initiating Khalti payment with payload:', JSON.stringify(payload, null, 2))
+                    const totalInNpr = convertToNpr(total);
+                    // eSewa v2 signature: total_amount,transaction_uuid,product_code
+                    const amountStr = totalInNpr.toFixed(1);
+                    const signatureString = `total_amount=${amountStr},transaction_uuid=${orderId},product_code=${esewaProductCode}`;
+                    const signature = crypto.createHmac('sha256', esewaSecretKey)
+                        .update(signatureString)
+                        .digest('base64');
 
-                const khaltiResponse = await fetch(`${process.env.KHALTI_BASE_URL}/epayment/initiate/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Key ${process.env.KHALTI_SECRET_KEY}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                })
+                    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-                const khaltiData = await khaltiResponse.json()
-                console.log('Khalti response:', JSON.stringify(khaltiData, null, 2))
+                    const esewaParams = {
+                        amount: amountStr,
+                        tax_amount: "0",
+                        total_amount: amountStr,
+                        transaction_uuid: orderId,
+                        product_code: esewaProductCode,
+                        product_service_charge: "0",
+                        product_delivery_charge: "0",
+                        success_url: `${origin}/api/payment/esewa/callback`,
+                        failure_url: `${origin}/checkout?error=payment_failed`,
+                        signed_field_names: "total_amount,transaction_uuid,product_code",
+                        signature: signature
+                    };
 
-                if (khaltiResponse.ok && khaltiData.pidx) {
-                    // Update order with pidx
-                    const updateRequest = new sql.Request(transaction)
-                    updateRequest.input('pidx', sql.NVarChar, khaltiData.pidx)
-                    updateRequest.input('orderId', sql.Int, dbOrderId)
-                    await updateRequest.query(`
-                        UPDATE Orders SET KhaltiPidx = @pidx WHERE Id = @orderId
-                    `)
+                    await transaction.commit();
 
-                    await transaction.commit()
+                    // We'll return a helper URL that will render a form and auto-submit it to eSewa
+                    // This keeps the client-side logic simple (just a redirect)
+                    const queryString = new URLSearchParams(esewaParams).toString();
+                    const paymentUrl = `${esewaBaseUrl}?${queryString}`;
+
+                    // Actually eSewa v2 accepts GET too for initiation (even though docs say POST)
+                    // But to be safe, we can return the params and the URL
                     return NextResponse.json({
                         success: true,
-                        pidx: khaltiData.pidx,
-                        payment_url: khaltiData.payment_url
-                    })
-                } else {
-                    throw new Error(khaltiData.message || 'Khalti initiation failed')
+                        payment_url: paymentUrl,
+                        params: esewaParams
+                    });
+
+                } catch (esewaError) {
+                    console.error('eSewa Initiation Failed:', esewaError.message);
+                    throw new Error('eSewa payment initiation failed');
                 }
             }
 

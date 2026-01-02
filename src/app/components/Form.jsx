@@ -2,27 +2,53 @@ import React from 'react'
 
 const Form = () => {
     return (
-        <div className='font-semibold'>
-            <h1 className='sm:text-4xl text-2xl'>Get in touch !</h1>
-            <form className='flex flex-col gap-6 mt-4'>
-                <div>
-                    <div>Name<span className='text-red-500'>*</span></div>
-                    <div><input type="text" className='sm:w-1/2 w-full text-xl p-2 rounded-sm' /></div>
+        <div>
+            <div className='mb-10'>
+                <h2 className='text-3xl font-black text-slate-900 mb-2'>Send us a Message</h2>
+                <div className='h-1 w-20 bg-indigo-600 rounded-full'></div>
+            </div>
+            <form className='flex flex-col gap-8'>
+                <div className='flex flex-col md:flex-row gap-6'>
+                    <div className='flex-1'>
+                        <label className='block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight'>Full Name<span className='text-red-500 ml-1'>*</span></label>
+                        <input
+                            type="text"
+                            placeholder="John Doe"
+                            className='w-full bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-300'
+                        />
+                    </div>
+                    <div className='flex-1'>
+                        <label className='block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight'>Email Address<span className='text-red-500 ml-1'>*</span></label>
+                        <input
+                            type="email"
+                            placeholder="john@example.com"
+                            className='w-full bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-300'
+                        />
+                    </div>
                 </div>
                 <div>
-                    <div>Email<span className='text-red-500'>*</span></div>
-                    <div><input type="email" className='sm:w-1/2 w-full text-xl p-2 rounded-sm' /></div>
+                    <label className='block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight'>Inquiry Subject<span className='text-red-500 ml-1'>*</span></label>
+                    <input
+                        type="text"
+                        placeholder="How can we help?"
+                        className='w-full bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-300'
+                    />
                 </div>
                 <div>
-                    <div>Subject<span className='text-red-500'>*</span></div>
-                    <div><input type="text" className='sm:w-1/2 w-full text-xl p-2 rounded-sm' /></div>
+                    <label className='block text-sm font-bold text-slate-700 mb-2 uppercase tracking-tight'>Your Message<span className='text-red-500 ml-1'>*</span></label>
+                    <textarea
+                        rows="5"
+                        placeholder="Tell us more about your inquiry..."
+                        className='w-full bg-slate-50 border border-slate-200 text-slate-900 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all duration-300 resize-none'
+                    ></textarea>
                 </div>
                 <div>
-                    <div>Message<span className='text-red-500'>*</span></div>
-                    <div><textarea type="text" className='sm:w-1/2 w-full text-xl p-2 rounded-sm' ></textarea></div>
-                </div>
-                <div>
-                    <button className='bg-indigo-400 text-white px-6 py-3 rounded-md hover:bg-indigo-500'>Send</button>
+                    <button className='w-full md:w-auto bg-indigo-600 text-white px-10 py-5 rounded-2xl font-bold shadow-xl shadow-indigo-200 hover:bg-indigo-700 hover:shadow-indigo-300 transform hover:-translate-y-1 transition-all duration-300'>
+                        Shoot your message
+                    </button>
+                    <p className='text-xs text-slate-400 mt-4 text-center md:text-left'>
+                        By clicking send, you agree to our terms and privacy policy.
+                    </p>
                 </div>
             </form>
         </div>

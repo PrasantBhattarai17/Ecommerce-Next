@@ -41,12 +41,14 @@ export default function WishlistPage() {
             <h1 className='text-4xl font-bold mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent'>My Wishlist</h1>
 
             <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
-                {wishlist.map((item) => (
-                    <div key={`${item.type}-${item.id}`} className='bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1'>
+                {wishlist.map((item, index) => (
+                    <div key={`${item.type}-${item.id}-${index}`} className='bg-white rounded-xl shadow-lg overflow-hidden group hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1'>
                         <Link href={`/products/${item.slug}`} className='relative block'>
                             <Image
-                                src={item.img}
+                                src={item.image || item.img}
                                 alt={item.name}
+                                width={500}
+                                height={500}
                                 className='w-full h-64 object-cover transition-transform group-hover:scale-105'
                             />
                             <div className='absolute top-4 right-4'>

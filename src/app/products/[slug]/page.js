@@ -22,7 +22,8 @@ export default function ProductDetailPage() {
             try {
                 setLoading(true)
                 const products = await fetchAllProducts()
-                const foundProduct = products.find(p => p.slug === slug)
+                // Use a more robust slug comparison
+                const foundProduct = products.find(p => p.slug === slug || p.slug.includes(slug) || slug.includes(p.slug))
                 setProduct(foundProduct)
             } catch (error) {
                 console.error('Error loading product:', error)
@@ -131,8 +132,8 @@ export default function ProductDetailPage() {
                         <button
                             onClick={handleWishlistToggle}
                             className={`p-4 rounded-xl border-2 transition duration-300 ${inWishlist
-                                    ? 'bg-red-50 border-red-500 text-red-600'
-                                    : 'border-gray-300 hover:border-red-500'
+                                ? 'bg-red-50 border-red-500 text-red-600'
+                                : 'border-gray-300 hover:border-red-500'
                                 }`}
                         >
                             <FaHeart className={`text-2xl ${inWishlist ? 'fill-current' : ''}`} />

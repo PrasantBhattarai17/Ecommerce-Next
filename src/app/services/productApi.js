@@ -1,35 +1,39 @@
-// API service for fetching products from FakeStore API
-const API_BASE_URL = 'https://fakestoreapi.com'
+// API service for fetching products from DummyJSON API (higher product count)
+const API_BASE_URL = 'https://dummyjson.com'
 
-// Transform API product to app product format
+// Transform DummyJSON product to app product format
 const transformProduct = (apiProduct) => {
     return {
         id: apiProduct.id,
         name: apiProduct.title,
         slug: apiProduct.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-        img: apiProduct.image,
+        img: apiProduct.thumbnail,
+        image: apiProduct.thumbnail, // Standardize on both property names
+        images: apiProduct.images,
         price: apiProduct.price,
-        originalPrice: null, // FakeStore API doesn't provide original price
+        originalPrice: apiProduct.price / (1 - apiProduct.discountPercentage / 100),
         category: apiProduct.category,
         description: apiProduct.description,
         longDescription: apiProduct.description,
-        features: [], // FakeStore API doesn't provide features
-        rating: apiProduct.rating?.rate || 0,
-        reviews: apiProduct.rating?.count || 0,
-        inStock: true, // Assume all products are in stock
-        brand: null // FakeStore API doesn't provide brand
+        features: apiProduct.tags || [],
+        rating: apiProduct.rating || 0,
+        reviews: Math.floor(Math.random() * 200) + 10, // Randomized reviews count
+        inStock: apiProduct.stock > 0,
+        brand: apiProduct.brand,
+        stock: apiProduct.stock
     }
 }
 
-// Fetch all products
+// Fetch all products (getting a larger set from dummyjson)
 export const fetchAllProducts = async () => {
     try {
-        const response = await fetch(`${API_BASE_URL}/products`)
+        // dummyjson defaults to 30, but we can request more
+        const response = await fetch(`${API_BASE_URL}/products?limit=100`)
         if (!response.ok) {
             throw new Error('Failed to fetch products')
         }
         const data = await response.json()
-        return data.map(transformProduct)
+        return data.products.map(transformProduct)
     } catch (error) {
         console.error('Error fetching products:', error)
         throw error
@@ -59,7 +63,7 @@ export const fetchProductsByCategory = async (category) => {
             throw new Error('Failed to fetch products by category')
         }
         const data = await response.json()
-        return data.map(transformProduct)
+        return data.products.map(transformProduct)
     } catch (error) {
         console.error('Error fetching products by category:', error)
         throw error
@@ -73,7 +77,9 @@ export const fetchCategories = async () => {
         if (!response.ok) {
             throw new Error('Failed to fetch categories')
         }
-        return await response.json()
+        const data = await response.json()
+        // dummyjson returns objects in recent versions, let's normalize to strings or extract names
+        return data.map(cat => typeof cat === 'object' ? cat.name : cat)
     } catch (error) {
         console.error('Error fetching categories:', error)
         throw error
@@ -88,10 +94,9 @@ export const fetchLimitedProducts = async (limit = 8) => {
             throw new Error('Failed to fetch limited products')
         }
         const data = await response.json()
-        return data.map(transformProduct)
+        return data.products.map(transformProduct)
     } catch (error) {
         console.error('Error fetching limited products:', error)
         throw error
     }
 }
-

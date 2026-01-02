@@ -21,7 +21,7 @@ export default function CheckoutPage() {
         state: '',
         zipCode: '',
         country: '',
-        paymentMethod: 'card'
+        paymentMethod: 'esewa'
     })
     const [errors, setErrors] = useState({})
     const [isProcessing, setIsProcessing] = useState(false)
@@ -129,10 +129,23 @@ export default function CheckoutPage() {
             const data = await response.json()
 
             if (response.ok) {
-                if (formData.paymentMethod === 'khalti' && data.payment_url) {
-                    // Redirect to Khalti
-                    window.location.href = data.payment_url
-                    return
+                if (formData.paymentMethod === 'esewa' && data.params) {
+                    // eSewa v2 requires a POST request via an HTML form
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = process.env.NEXT_PUBLIC_ESEWA_BASE_URL || 'https://rc-epay.esewa.com.np/api/epay/main/v2/form';
+
+                    Object.entries(data.params).forEach(([key, value]) => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = value;
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                    return;
                 }
 
                 // For other methods (simulated)
@@ -279,18 +292,18 @@ export default function CheckoutPage() {
                     <div className='bg-white rounded-xl shadow-lg p-6 border-2 border-indigo-100'>
                         <h2 className='text-2xl font-bold mb-6 text-indigo-600'>Payment Method</h2>
                         <div className='space-y-4'>
-                            <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'khalti' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}>
+                            <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'esewa' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}>
                                 <input
                                     type='radio'
                                     name='paymentMethod'
-                                    value='khalti'
-                                    checked={formData.paymentMethod === 'khalti'}
+                                    value='esewa'
+                                    checked={formData.paymentMethod === 'esewa'}
                                     onChange={handleChange}
                                     className='w-5 h-5 text-indigo-600'
                                 />
                                 <div className='flex items-center gap-3'>
-                                    <div className='w-10 h-10 bg-purple-700 rounded-md flex items-center justify-center text-white font-bold text-xs'>KHALTI</div>
-                                    <span className='font-semibold text-gray-800'>Pay with Khalti</span>
+                                    <div className='w-10 h-10 bg-green-600 rounded-md flex items-center justify-center text-white font-bold text-xs uppercase'>eSewa</div>
+                                    <span className='font-semibold text-gray-800'>Pay with eSewa</span>
                                 </div>
                             </label>
                             <label className={`flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${formData.paymentMethod === 'card' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'}`}>
@@ -360,4 +373,3 @@ export default function CheckoutPage() {
         </div>
     )
 }
-

@@ -50,10 +50,13 @@ export default function Navbar() {
                                 <Link href='/products' className='hover:text-indigo-600 transition'>All Products</Link>
                             </li>
                             <li>
-                                <Link href='/products?category=Electronics' className='hover:text-indigo-600 transition text-sm'>Electronics</Link>
+                                <Link href='/products?category=beauty' className='hover:text-indigo-600 transition text-sm'>Beauty</Link>
                             </li>
                             <li>
-                                <Link href='/products?category=Fashion' className='hover:text-indigo-600 transition text-sm'>Fashion</Link>
+                                <Link href='/products?category=fragrances' className='hover:text-indigo-600 transition text-sm'>Fragrances</Link>
+                            </li>
+                            <li>
+                                <Link href='/products?category=furniture' className='hover:text-indigo-600 transition text-sm'>Furniture</Link>
                             </li>
                             <li>
                                 <Link href='/about' className='hover:text-indigo-600 transition'>About</Link>
@@ -126,8 +129,9 @@ export default function Navbar() {
                     <div className='bg-white px-7 py-8 shadow-inner'>
                         <ul className='flex flex-col gap-6 font-medium'>
                             <li><Link href='/products' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600' >All Products</Link></li>
-                            <li><Link href='/products?category=Electronics' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Electronics</Link></li>
-                            <li><Link href='/products?category=Fashion' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Fashion</Link></li>
+                            <li><Link href='/products?category=beauty' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Beauty</Link></li>
+                            <li><Link href='/products?category=fragrances' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Fragrances</Link></li>
+                            <li><Link href='/products?category=furniture' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Furniture</Link></li>
                             <li><Link href='/about' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>About</Link></li>
                             <hr className='border-gray-100' />
                             <li><Link href='/wishlist' onClick={handleClick} className='block py-2 text-lg hover:text-indigo-600'>Wishlist</Link></li>
